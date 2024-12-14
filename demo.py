@@ -17,7 +17,7 @@ from monkey_model.configuration_monkey import MonkeyConfig
 import shutil
 from pathlib import Path
 import json
-DEFAULT_CKPT_PATH = '/home/zhangli/demo/'
+DEFAULT_CKPT_PATH = '/root/.cache/huggingface/hub/models--echo840--Monkey-Chat/snapshots/8a447049636331e3c8ba9a92f5021c70914f8351'
 BOX_TAG_PATTERN = r"<box>([\s\S]*?)</box>"
 PUNCTUATION = "！？。＂＃＄％＆＇（）＊＋，－／：；＜＝＞＠［＼］＾＿｀｛｜｝～｟｠｢｣､、〃》「」『』【】〔〕〖〗〘〙〚〛〜〝〞〟〰〾〿–—‘’‛“”„‟…‧﹏."
 title_markdown = ("""
@@ -48,7 +48,7 @@ def _get_args():
     parser = ArgumentParser()
     parser.add_argument("-c", "--checkpoint-path", type=str, default=DEFAULT_CKPT_PATH,
                         help="Checkpoint name or path, default to %(default)r")
-    parser.add_argument("--cpu-only", action="store_true", help="Run demo with CPU only")
+    parser.add_argument("--cpu-only", action="store_true", help="Run demo with CPU only",default=False)
 
     parser.add_argument("--share", action="store_true", default=False,
                         help="Create a publicly shareable link for the interface.")

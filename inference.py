@@ -4,8 +4,10 @@ import argparse
 if __name__=="__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--model_path", type=str, default="echo840/Monkey-Chat") #echo840/Monkey-Chat  echo840/Monkey
-    parser.add_argument("--image_path", type=str, default=None)
-    parser.add_argument("--question", type=str, default=None)
+    # parser.add_argument("--image_path", type=str, default='/home/Vary-toy/pictures/image copy 2.png')
+    parser.add_argument("--image_path", type=str, default='/home/Monkey/pics/image.png')
+    parser.add_argument("--question", type=str, default='这个药品的生产地址是哪里')
+    # parser.add_argument("--question", type=str, default='describe the image')
     args = parser.parse_args()
 
     checkpoint = args.model_path
@@ -37,6 +39,6 @@ if __name__=="__main__":
                 use_cache=True,
                 pad_token_id=tokenizer.eod_id,
                 eos_token_id=tokenizer.eod_id,
-                )
+            )
     response = tokenizer.decode(pred[0][input_ids.size(1):].cpu(), skip_special_tokens=True).strip()
     print(f"Question: {question} Answer: {response}")

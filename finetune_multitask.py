@@ -29,12 +29,8 @@ class ModelArguments:
 
 @dataclass
 class DataArguments:
-    data_path: str = field(
-        default=None, metadata={"help": "Path to the training data."}
-    )
-    eval_data_path: str = field(
-        default=None, metadata={"help": "Path to the evaluation data."}
-    )
+    data_path: str = field(default=None, metadata={"help": "Path to the training data."})
+    eval_data_path: str = field(default=None, metadata={"help": "Path to the evaluation data."})
     lazy_preprocess: bool = False
 
 
@@ -44,9 +40,7 @@ class TrainingArguments(transformers.TrainingArguments):
     optim: str = field(default="adamw_torch")
     model_max_length: int = field(
         default=8192,
-        metadata={
-            "help": "Maximum sequence length. Sequences will be right padded (and possibly truncated)."
-        },
+        metadata={"help": "Maximum sequence length. Sequences will be right padded (and possibly truncated)."},
     )
     use_lora: bool = False
     fix_vit: bool = True
@@ -281,11 +275,11 @@ def train():
     if getattr(training_args, 'deepspeed', None) and getattr(lora_args, 'q_lora', False):
         training_args.distributed_state.distributed_type = DistributedType.DEEPSPEED
 
-    compute_dtype = (
-        torch.float16
-        if training_args.fp16
-        else (torch.bfloat16 if training_args.bf16 else torch.float32)
-    )
+    # compute_dtype = (
+    #     torch.float16
+    #     if training_args.fp16
+    #     else (torch.bfloat16 if training_args.bf16 else torch.float32)
+    # )
 
     local_rank = training_args.local_rank
 
@@ -295,9 +289,7 @@ def train():
     if lora_args.q_lora:
         device_map = {"": int(os.environ.get("LOCAL_RANK") or 0)} if ddp else None
         if len(training_args.fsdp) > 0 or deepspeed.is_deepspeed_zero3_enabled():
-            logging.warning(
-                "FSDP or ZeRO3 are not incompatible with QLoRA."
-            )
+            logging.warning("FSDP or ZeRO3 are not incompatible with QLoRA.")
 
     # Set RoPE scaling factor
     config = MonkeyConfig.from_pretrained(
@@ -316,9 +308,7 @@ def train():
         cache_dir=training_args.cache_dir,
         device_map=device_map,
         trust_remote_code=True,
-        quantization_config=GPTQConfig(
-            bits=4, disable_exllama=True
-        )
+        quantization_config=GPTQConfig(bits=4, disable_exllama=True)
         if training_args.use_lora and lora_args.q_lora
         else None,
     )
@@ -369,13 +359,9 @@ def train():
 
     print_trainable_params(model)
     # Load data
-    data_module = make_supervised_data_module(
-        tokenizer=tokenizer, data_args=data_args, max_len=training_args.model_max_length
-    )
+    data_module = make_supervised_data_module(tokenizer=tokenizer, data_args=data_args, max_len=training_args.model_max_length)
     # Start trainner
-    trainer = Trainer(
-        model=model, tokenizer=tokenizer, args=training_args, **data_module
-    )
+    trainer = Trainer(model=model, tokenizer=tokenizer, args=training_args, **data_module)
 
     trainer.train()
     trainer.save_state()

@@ -4,9 +4,9 @@ tiktoken
 einops
 transformers_stream_generator==0.0.4
 scipy
-torch==2.0.1
-torchvision==0.15.2
-torchaudio==2.0.2
+# torch==2.0.1
+# torchvision==0.15.2
+# torchaudio==2.0.2
 pillow
 tensorboard
 matplotlib
