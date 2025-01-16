@@ -29,12 +29,8 @@ class ModelArguments:
 
 @dataclass
 class DataArguments:
-    data_path: str = field(
-        default=None, metadata={"help": "Path to the training data."}
-    )
-    eval_data_path: str = field(
-        default=None, metadata={"help": "Path to the evaluation data."}
-    )
+    data_path: str = field(default=None, metadata={"help": "Path to the training data."})
+    eval_data_path: str = field(default=None, metadata={"help": "Path to the evaluation data."})
     lazy_preprocess: bool = False
 
 
@@ -232,13 +228,9 @@ class LazySupervisedDataset(Dataset):
         return ret
 
 
-def make_supervised_data_module(
-    tokenizer: transformers.PreTrainedTokenizer, data_args, max_len,
-) -> Dict:
+def make_supervised_data_module(tokenizer: transformers.PreTrainedTokenizer, data_args, max_len,) -> Dict:
     """Make dataset and collator for supervised fine-tuning."""
-    dataset_cls = (
-        LazySupervisedDataset if data_args.lazy_preprocess else SupervisedDataset
-    )
+    dataset_cls = (LazySupervisedDataset if data_args.lazy_preprocess else SupervisedDataset)
     rank0_print("Loading data...")
 
     train_json = json.load(open(data_args.data_path, "r"))
@@ -268,15 +260,8 @@ def print_trainable_params(model: torch.nn.Module):
 def train():
     global local_rank
     
-    parser = transformers.HfArgumentParser(
-        (ModelArguments, DataArguments, TrainingArguments, LoraArguments)
-    )
-    (
-        model_args,
-        data_args,
-        training_args,
-        lora_args,
-    ) = parser.parse_args_into_dataclasses()
+    parser = transformers.HfArgumentParser((ModelArguments, DataArguments, TrainingArguments, LoraArguments))
+    (model_args,data_args,training_args,lora_args,) = parser.parse_args_into_dataclasses()
 
     if getattr(training_args, 'deepspeed', None) and getattr(lora_args, 'q_lora', False):
         training_args.distributed_state.distributed_type = DistributedType.DEEPSPEED
@@ -295,9 +280,7 @@ def train():
     if lora_args.q_lora:
         device_map = {"": int(os.environ.get("LOCAL_RANK") or 0)} if ddp else None
         if len(training_args.fsdp) > 0 or deepspeed.is_deepspeed_zero3_enabled():
-            logging.warning(
-                "FSDP or ZeRO3 are not incompatible with QLoRA."
-            )
+            logging.warning("FSDP or ZeRO3 are not incompatible with QLoRA.")
 
     # Set RoPE scaling factor
     config = MonkeyConfig.from_pretrained(
@@ -316,13 +299,8 @@ def train():
         cache_dir=training_args.cache_dir,
         device_map=device_map,
         trust_remote_code=True,
-        quantization_config=GPTQConfig(
-            bits=4, disable_exllama=True
-        )
-        if training_args.use_lora and lora_args.q_lora
-        else None,
+        quantization_config=GPTQConfig(bits=4, disable_exllama=True) if training_args.use_lora and lora_args.q_lora else None,
     )
-
 
     tokenizer = QWenTokenizer.from_pretrained(
         "monkey_model",
@@ -333,8 +311,6 @@ def train():
         trust_remote_code=True,
     )
     tokenizer.pad_token_id = tokenizer.eod_id
-
-
 
     if not training_args.use_lora:
         if training_args.fix_vit and hasattr(model,'transformer') and hasattr(model.transformer,'visual'):
@@ -369,21 +345,19 @@ def train():
 
     print_trainable_params(model)
     # Load data
-    data_module = make_supervised_data_module(
-        tokenizer=tokenizer, data_args=data_args, max_len=training_args.model_max_length
-    )
+    data_module = make_supervised_data_module(tokenizer=tokenizer, data_args=data_args, max_len=training_args.model_max_length)
     # Start trainner
-    trainer = Trainer(
-        model=model, tokenizer=tokenizer, args=training_args, **data_module
-    )
+    trainer = Trainer(model=model, tokenizer=tokenizer, args=training_args, **data_module)
 
     trainer.train()
     trainer.save_state()
 
     safe_save_model_for_hf_trainer(trainer=trainer, output_dir=training_args.output_dir, bias=lora_args.lora_bias)
 
+
 import numpy as np
 import random
+
 def setup_seed(seed):
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
@@ -392,6 +366,8 @@ def setup_seed(seed):
     # torch.backends.cudnn.deterministic = True
     # torch.backends.cudnn.benchmark = False
     os.environ["PYTHONHASHSEED"] = str(seed)
+
+
 if __name__ == "__main__":
     setup_seed(46)
     train()

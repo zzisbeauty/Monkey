@@ -9,9 +9,10 @@ MASTER_ADDR=localhost
 MASTER_PORT=6001
 
 MODEL="Qwen/Qwen-VL" # We use the first version of Qwen-VL
+
 # ATTENTION: specify the path to your training data, which should be a json file consisting of a list of conversations.
 # See the section for finetuning in README for more information.
-DATA="pathto/data"
+DATA="../untrack/train_monkey.json"
 
 DISTRIBUTED_ARGS="--nproc_per_node $GPUS_PER_NODE \
     --nnodes $NNODES \
